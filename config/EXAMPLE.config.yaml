@@ -1,0 +1,6 @@
+listeners:
+  SITE_A: "nc -l -s localhost -p XXXX"
+
+influx_db:
+  db_id: "DATABASE_IDENTIFIER"
+  database_config_file: "./config/db_configuration.json"

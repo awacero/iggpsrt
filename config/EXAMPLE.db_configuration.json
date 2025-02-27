@@ -1,0 +1,21 @@
+{
+
+
+"db_id_maiar":
+        {
+                "host":"sauron.",
+                "port":"1954",
+                "user":"maiar",
+                "pass":"eru_iluvatar",
+                "DBName":"mordor"
+        },
+
+"db_id_Arwen":
+        {
+                "host":"Arwen.Undomiel.",
+                "port":"1955",
+                "user":"elrond",
+                "pass":"celebrian",
+                "DBName":"Aragorn"
+        }
+}

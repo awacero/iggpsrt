@@ -2,8 +2,6 @@ import logging
 import logging.config
 import argparse
 import sys
-
-import yaml
 import subprocess
 
 from src import iggpsrt_process

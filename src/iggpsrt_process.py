@@ -6,8 +6,20 @@ import logging
 
 
 
-def start_listener(host, eryo_command, max_retries,influx_client):
-    """Start a single listener process with retries."""
+def start_listener(host, eryo_command, max_retries, influx_client):
+    """Start a listener process with retry logic.
+
+    Parameters
+    ----------
+    host : str
+        Host identifier of the listener.
+    eryo_command : str
+        Command used to spawn the listener.
+    max_retries : int
+        Maximum number of restart attempts.
+    influx_client : InfluxDBClient
+        Client used for writing data to InfluxDB.
+    """
     retries = 0
     while retries < max_retries:
         if run_process(host, eryo_command,influx_client):
@@ -18,8 +30,23 @@ def start_listener(host, eryo_command, max_retries,influx_client):
     logging.critical(f"Max retries reached for {host}:{eryo_command}. Exiting.")
 
 
-def run_process(host, eryo_command,influx_client):
-    """Run the external command and process its output."""
+def run_process(host, eryo_command, influx_client):
+    """Execute a command and handle its output.
+
+    Parameters
+    ----------
+    host : str
+        Host identifier of the listener.
+    eryo_command : str
+        Command string to execute.
+    influx_client : InfluxDBClient
+        Client used for writing data.
+
+    Returns
+    -------
+    bool
+        ``True`` on success, ``False`` otherwise.
+    """
     try:
         logging.info(f"Starting listener for {host}:{eryo_command}")
         ##process = subprocess.Popen(eryo_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -38,8 +65,20 @@ def run_process(host, eryo_command,influx_client):
         return False
 
 
-def process_output(process, host, eryo_command,influx_client):
-    """Read and parse the output from the running process."""
+def process_output(process, host, eryo_command, influx_client):
+    """Parse lines from the running process and send complete data to InfluxDB.
+
+    Parameters
+    ----------
+    process : subprocess.Popen
+        Running process producing the output.
+    host : str
+        Host identifier of the listener.
+    eryo_command : str
+        Command executed.
+    influx_client : InfluxDBClient
+        Client used for writing parsed data.
+    """
     collected_data = {}
 
     for line in process.stdout:        
@@ -61,6 +100,7 @@ def process_output(process, host, eryo_command,influx_client):
             logging.warning(f"Empty response received from {host}:{eryo_command}")
 
 def order_gps_data(collected_data):
+    """Reformat collected data to the structure expected by InfluxDB."""
 
     gps_data = {}
     gps_data['site_id'] = collected_data['site_id']
@@ -81,7 +121,18 @@ def order_gps_data(collected_data):
 
 
 def parse_line(line):
-    """Parse a single line of output and return extracted data."""
+    """Return a dictionary with data parsed from a listener line.
+
+    Parameters
+    ----------
+    line : str
+        Raw output line from the listener process.
+
+    Returns
+    -------
+    dict
+        Parsed values or an empty dictionary if the line is not recognized.
+    """
     if "=" not in line:
         return {}
 
@@ -102,15 +153,36 @@ def parse_line(line):
 
 
 def is_data_complete(data):
-    """Check if all required fields are available before sending to InfluxDB."""
+    """Return ``True`` if all required fields are present.
+
+    Parameters
+    ----------
+    data : dict
+        Dictionary with parsed values.
+
+    Returns
+    -------
+    bool
+        ``True`` when all mandatory keys exist, ``False`` otherwise.
+    """
     required_keys = {"site_id", "gps_week", "gps_millisecond", "xyz", "enu", "satellite_number"}
     return required_keys.issubset(data.keys())
 
 
 def gps_to_utc(gps_week, gps_millisecond):
-    """
-    Convert GPS week and milliseconds into UTC date and time.
-    GPS time started at 1980-01-06 and does not account for leap seconds.
+    """Convert GPS week and milliseconds to a UTC timestamp in nanoseconds.
+
+    Parameters
+    ----------
+    gps_week : int
+        GPS week number since the epoch (1980-01-06).
+    gps_millisecond : int
+        Milliseconds within the GPS week.
+
+    Returns
+    -------
+    int
+        UTC timestamp expressed in nanoseconds.
     """
     # Define the GPS epoch (January 6, 1980)
     gps_epoch = datetime(1980, 1, 6)
@@ -127,9 +199,16 @@ def gps_to_utc(gps_week, gps_millisecond):
 
 
 
-def send_to_influx(data,influx_client):
+def send_to_influx(data, influx_client):
+    """Write structured GPS data to InfluxDB.
 
-    """Send the structured data to InfluxDB 1.6."""
+    Parameters
+    ----------
+    data : dict
+        Dictionary with ordered GPS information.
+    influx_client : InfluxDBClient
+        Client instance used to write points.
+    """
     try:
         # Create a JSON payload for InfluxDB 1.x
         json_body = [
@@ -161,13 +240,31 @@ def send_to_influx(data,influx_client):
 
 
 def log_error(process, host, eryo_command):
-    """Log errors from a failed process."""
+    """Log standard error output from a failed process.
+
+    Parameters
+    ----------
+    process : subprocess.Popen
+        Process object that produced the error.
+    host : str
+        Host identifier of the listener.
+    eryo_command : str
+        Command that was executed.
+    """
     stderr_output = process.stderr.read()
     logging.error(f"Process error for {host}:{eryo_command}: {stderr_output}")
 
 
-def start_all_listeners(listeners,influx_client):
-    """Start multiple listeners in parallel using multiprocessing."""
+def start_all_listeners(listeners, influx_client):
+    """Launch multiple listener processes concurrently.
+
+    Parameters
+    ----------
+    listeners : list[tuple[str, str]]
+        Iterable of ``(host, command)`` pairs.
+    influx_client : InfluxDBClient
+        Client used for writing data.
+    """
     max_retries = 5
     processes = []
     for host, eryo_command in listeners:

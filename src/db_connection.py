@@ -4,26 +4,31 @@ from influxdb import DataFrameClient
 
 
 
-def get_influxdb_client(db_host, db_port,username,password,db_name):
+def get_influxdb_client(db_host, db_port, username, password, db_name):
+    """Return a configured :class:`InfluxDBClient` instance.
 
-    """
-    Create a client connection to an InfluxDB database.
+    Parameters
+    ----------
+    db_host : str
+        Hostname or IP address of the InfluxDB server.
+    db_port : int
+        Port on which the InfluxDB server is listening.
+    username : str
+        Username used for authentication.
+    password : str
+        Password used for authentication.
+    db_name : str
+        Name of the database to connect to.
 
-    This function initializes a connection to an InfluxDB database using the specified 
-    connection parameters. It employs the InfluxDBClient for creating this connection.
+    Returns
+    -------
+    InfluxDBClient
+        Client object representing the connection.
 
-    :param str db_host: The hostname or IP address of the InfluxDB server.
-    :param int db_port: The port number on which the InfluxDB server is listening.
-    :param str username: The username used to authenticate with the InfluxDB.
-    :param str password: The password used to authenticate with the InfluxDB.
-    :param str db_name: The name of the database to connect to in InfluxDB.
-    :return: A client object representing the connection to the InfluxDB.
-    :rtype: InfluxDBClient
-    :raises Exception: If the connection attempt fails, an exception is raised 
-                       with a descriptive error message.
-
-    Example usage:
-    >>> client = get_influxdb_client('localhost', 8086, 'user', 'password', 'myDatabase')
+    Raises
+    ------
+    Exception
+        If the connection attempt fails.
     """
 
 
@@ -37,21 +42,36 @@ def get_influxdb_client(db_host, db_port,username,password,db_name):
         raise Exception("Error in get_influxdb_client: %s" %str(e))
        
 def closeConexion(conexion):
+    """Close an open database connection."""
     conexion.close()
 
         
 
-def get_influx_DF_client(host,port,user,passw,db_name):
-    """  
-    Obtiene un cliente influx
-    
-    :param string host: ip del servidor
-    :param string port: puerto del servidor
-    :param string user: usuario 
-    :param string passw: contrasena
-    :param string db_name: nombre de la base de datos 
-    :return InfluxDBClient
-    :Raises Exception e: error al crear el cliente influx
+def get_influx_DF_client(host, port, user, passw, db_name):
+    """Return a :class:`DataFrameClient` configured with the provided parameters.
+
+    Parameters
+    ----------
+    host : str
+        InfluxDB server address.
+    port : int
+        Port of the InfluxDB server.
+    user : str
+        Username used for authentication.
+    passw : str
+        Password used for authentication.
+    db_name : str
+        Name of the database.
+
+    Returns
+    -------
+    DataFrameClient
+        Configured DataFrame client.
+
+    Raises
+    ------
+    Exception
+        If the client cannot be created.
     """
     try:
         return DataFrameClient(host=host,port=port, username=user,password=passw,database=db_name)

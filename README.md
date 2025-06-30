@@ -54,4 +54,26 @@ Describe el flujo de ejecución desde el inicio del script hasta la inserción d
 ---
 
 
+## Pruebas en el servidor de desarrollo
 
+- Conectarse al servidor SRVPROGPSR
+
+```
+$ cd programas
+$ bash eryo_netcat_trpg.sh
+```
+
+- Ejecutar localmente en la pc de desarrollo
+
+```
+$ conda activate iggpsrt
+$ python main.py 
+
+```
+
+- Verificar el funcionamiento revisando los logs
+
+```
+$ tail -f iggpsrt.log 
+
+```

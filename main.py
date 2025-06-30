@@ -14,6 +14,7 @@ logging.basicConfig(filename="listener.log", level=logging.INFO, format="%(ascti
 
 
 def main(args):
+    """Entry point for launching listeners based on the provided arguments."""
 
     configuration_file = args.iggpsrt_config
 

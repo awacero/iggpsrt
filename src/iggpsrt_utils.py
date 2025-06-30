@@ -3,23 +3,24 @@
 import os
 
 def check_file_exists(file_path):
-    """
-    Check if a file exists.
-
-    :param file_path: Path to the file.
-    :return: True if the file exists, False otherwise.
-    """
+    """Return ``True`` if the given file path exists."""
     return os.path.isfile(file_path)
 
 
 import yaml
 
 def load_yaml_config(file_path):
-    """
-    Reads a YAML file and returns the configuration as a dictionary.
+    """Load a YAML configuration file and return it as a dictionary.
 
-    :param file_path: Path to the YAML configuration file.
-    :return: Dictionary with the configuration.
+    Parameters
+    ----------
+    file_path : str
+        Path to the YAML configuration file.
+
+    Returns
+    -------
+    dict or None
+        Parsed configuration or ``None`` if the file could not be read.
     """
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -36,12 +37,19 @@ import json
 import os
 
 def load_json_config(file_path, encoding="utf-8"):
-    """
-    Reads a JSON file and returns the configuration as a dictionary.
+    """Load a JSON file and return the parsed dictionary.
 
-    :param file_path: Path to the JSON file.
-    :param encoding: Encoding format (default: 'utf-8').
-    :return: Dictionary with the JSON content or None if an error occurs.
+    Parameters
+    ----------
+    file_path : str
+        Path to the JSON file.
+    encoding : str, optional
+        Encoding format used to read the file.
+
+    Returns
+    -------
+    dict or None
+        Parsed JSON data or ``None`` if an error occurs.
     """
     try:
         # Open and load JSON

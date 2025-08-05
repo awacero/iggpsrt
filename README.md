@@ -4,7 +4,7 @@
 
 ---
 
-## 🚀 ¿Qué hace este proyecto?
+## ¿Qué hace este proyecto?
 
 - Lee configuraciones desde archivos YAML y JSON.
 - Inicia procesos externos (listeners) que recogen datos de estaciones GNSS.
@@ -26,6 +26,40 @@ $ conda create -n iggpsrt python=3.11
 $ conda activate iggpsrt
 $ conda install influxdb
 $ conda install pyyaml
+```
+
+
+## Create the influx database
+
+## Create the mongo DB and collection
+
+```bash
+
+$ mongo -u ADMIN_USER -p ADMIN_PASSWORD
+
+# Create gps DB
+> use gps
+
+# Create collection gps_realtime
+> db.createCollection("gps_realtime")
+
+## Create user realtime
+
+> db.createUser({
+  user: "USERNAME",
+  pwd: "USER_PASSWORD",
+  roles: [
+    {
+      role: "readWrite",
+      db: "gps"
+    }
+  ]
+})
+
+## Check the conection
+
+$ mongo -u USERNAME -p USER_PASSWORD --authenticationDatabase gps
+
 ```
 
 

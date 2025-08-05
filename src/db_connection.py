@@ -2,22 +2,6 @@ import logging
 from influxdb import InfluxDBClient
 from influxdb import DataFrameClient
 
-from pymongo import MongoClient
-
-def get_mongodb_client(host, port, username, password, db_name, auth_source='admin'):
-    """
-    Create a client connection to a MongoDB database.
-    """
-    try:
-        uri = f"mongodb://{username}:{password}@{host}:{port}/{db_name}?authSource={auth_source}"
-        client = MongoClient(uri)
-        return client[db_name]  # Return the DB object directly
-    except Exception as e:
-        logging.error(f"Error connecting to MongoDB: {e}")
-        raise
-
-
-
 
 
 def get_influxdb_client(db_host, db_port,username,password,db_name):

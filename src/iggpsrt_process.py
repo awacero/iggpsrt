@@ -215,7 +215,7 @@ def send_to_influx(data, influx_client):
             {
                 "measurement": "gps_position",
                 "tags": {
-                    "site": data.get("site_id", "UNKNOWN")
+                    "site_id": data.get("site_id", "UNKNOWN")
                 },
                 "fields": {
                     "gps_datetime": data["gps_datetime"],

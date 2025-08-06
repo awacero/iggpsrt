@@ -7,7 +7,7 @@ import subprocess
 from src import iggpsrt_process
 from src import iggpsrt_configure
 from src import iggpsrt_utils
-from src import db_connection
+from src import db_connection, db_connection_mongo
 
 # Configure logging
 logging.basicConfig(filename="listener.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -37,6 +37,7 @@ def main(args):
             listeners = list(config['listeners'].items())
             db_config_file = config['influx_db']['database_config_file']
             db_id = config['influx_db']['db_id']
+            mongo_db_id = config['mongo_db']['db_id']
 
         else:
             logger.info(f"Configuration file {configuration_file} content NOT OK. Exit")
@@ -57,11 +58,14 @@ def main(args):
         logger.error(f"Error checking configuration  file: {e}" )
         raise Exception(f"Error checking configuration file: {e}" )
    
+    """Load db parameters for influx and mongo"""
     try:
         db_param = iggpsrt_utils.load_json_config(db_config_file)
         if db_param:
-            db_param = db_param[db_id]
             print(db_param)
+            influx_db_param = db_param[db_id]
+            mongo_db_param = db_param[mongo_db_id]
+            print(mongo_db_param)
     except Exception as e:
         logger.error(f"Error reading configuration  file: {e}" )
         raise Exception(f"Error reading configuration file: {e}" )
@@ -69,9 +73,9 @@ def main(args):
 
     try:
 
-        influx_client = db_connection.get_influxdb_client(db_host=db_param['host'],db_port=db_param['port'],
-                                        username= db_param['user'], password=db_param['pass'],
-                                        db_name=db_param['DBName'])
+        influx_client = db_connection.get_influxdb_client(db_host=influx_db_param['host'],db_port=influx_db_param['port'],
+                                        username= influx_db_param['user'], password=influx_db_param['pass'],
+                                        db_name=influx_db_param['DBName'])
         print(influx_client)
     except Exception as e:
         logger.error(f"Error creating influx client: {e}" )
@@ -79,12 +83,20 @@ def main(args):
 
 
     try:
+        mongo_collection = db_connection_mongo.connect_to_mongodb(mongo_db_param['user'],mongo_db_param['pass'],
+                                                                  mongo_db_param['host'],mongo_db_param['port'],
+                                                                  mongo_db_param['DBName'], mongo_db_param['collection'],)
+    except Exception as e:
+        logger.error(f"Error creating mongo client and collection: {e}" )
+        raise Exception(f"Error creating mongo client and collection: {e}" )       
+
+    try:
         iggpsrt_process.start_all_listeners(listeners,influx_client)
 
     except Exception as e:
         logger.error(f"Error starting listeners: {e}" )
         raise Exception(f"Error starting listeners: {e}" )
-   
+
 
 
 if __name__ == "__main__":

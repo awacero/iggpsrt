@@ -1,5 +1,8 @@
 from pymongo import MongoClient, errors
 from urllib.parse import quote_plus
+import logging
+from datetime import datetime
+ 
 
 def connect_to_mongodb(user, password, host, port, database,collection_name, timeout_ms=5000):
     """
@@ -19,20 +22,17 @@ def connect_to_mongodb(user, password, host, port, database,collection_name, tim
         client = MongoClient(uri, serverSelectionTimeoutMS=timeout_ms)
         # Force a call to the server to ensure connection
         client.admin.command("ping")
-        print(f"Connected successfully to MongoDB at {host}:{port}")
+        logging.error(f"Connected successfully to MongoDB at {host}:{port}")
         return client[database][collection_name]
     except errors.ServerSelectionTimeoutError as e:
-        print(f"Connection timeout: {e}")
+        logging.error(f"Connection timeout: {e}")
     except errors.OperationFailure as e:
-        print(f"Authentication failed: {e}")
+        logging.error(f"Authentication failed: {e}")
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logging.error(f"Unexpected error: {e}")
     return None
 
 
-
-import logging
-from datetime import datetime
 
 def send_to_mongo(data, mongo_collection):
     """

@@ -1,12 +1,15 @@
+import sys,os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
 import subprocess
 import time
 import multiprocessing
 from datetime import datetime, timedelta
 import logging
 
+from db_connection_mongo import send_to_mongo
 
-
-def start_listener(host, eryo_command, max_retries, influx_client):
+def start_listener(host, eryo_command, max_retries, influx_client,mongo_collection):
     """Start a listener process with retry logic.
 
     Parameters
@@ -22,7 +25,7 @@ def start_listener(host, eryo_command, max_retries, influx_client):
     """
     retries = 0
     while retries < max_retries:
-        if run_process(host, eryo_command,influx_client):
+        if run_process(host, eryo_command,influx_client,mongo_collection):
             return  # Exit loop on success
         retries += 1
         time.sleep(2 ** retries)  # Exponential backoff
@@ -30,7 +33,7 @@ def start_listener(host, eryo_command, max_retries, influx_client):
     logging.critical(f"Max retries reached for {host}:{eryo_command}. Exiting.")
 
 
-def run_process(host, eryo_command, influx_client):
+def run_process(host, eryo_command, influx_client,mongo_collection):
     """Execute a command and handle its output.
 
     Parameters
@@ -52,7 +55,7 @@ def run_process(host, eryo_command, influx_client):
         ##process = subprocess.Popen(eryo_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         process = subprocess.Popen(eryo_command, shell=True, text=True, stdout=subprocess.PIPE)
 
-        process_output(process, host, eryo_command,influx_client)
+        process_output(process, host, eryo_command,influx_client,mongo_collection)
         process.wait()
 
         if process.returncode != 0:
@@ -65,7 +68,7 @@ def run_process(host, eryo_command, influx_client):
         return False
 
 
-def process_output(process, host, eryo_command, influx_client):
+def process_output(process, host, eryo_command, influx_client,mongo_collection):
     """Parse lines from the running process and send complete data to InfluxDB.
 
     Parameters
@@ -94,6 +97,7 @@ def process_output(process, host, eryo_command, influx_client):
 
                     temp_dict =order_gps_data(collected_data)
                     send_to_influx(temp_dict,influx_client)
+                    send_to_mongo(temp_dict,mongo_collection)
                     collected_data.clear()
                 
         else:
@@ -255,7 +259,7 @@ def log_error(process, host, eryo_command):
     logging.error(f"Process error for {host}:{eryo_command}: {stderr_output}")
 
 
-def start_all_listeners(listeners, influx_client):
+def start_all_listeners(listeners, influx_client,mongo_collection):
     """Launch multiple listener processes concurrently.
 
     Parameters
@@ -268,7 +272,7 @@ def start_all_listeners(listeners, influx_client):
     max_retries = 5
     processes = []
     for host, eryo_command in listeners:
-        p = multiprocessing.Process(target=start_listener, args=(host, eryo_command,max_retries,influx_client))
+        p = multiprocessing.Process(target=start_listener, args=(host, eryo_command,max_retries,influx_client,mongo_collection))
         p.start()
         processes.append(p)
 

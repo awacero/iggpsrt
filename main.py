@@ -91,7 +91,7 @@ def main(args):
         raise Exception(f"Error creating mongo client and collection: {e}" )       
 
     try:
-        iggpsrt_process.start_all_listeners(listeners,influx_client)
+        iggpsrt_process.start_all_listeners(listeners,influx_client,mongo_collection)
 
     except Exception as e:
         logger.error(f"Error starting listeners: {e}" )

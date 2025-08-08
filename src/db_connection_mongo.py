@@ -48,7 +48,7 @@ def send_to_mongo(data, mongo_collection):
     try:
         # Prepare the document for MongoDB
         document = {
-            "site": data.get("site_id", "UNKNOWN"),
+            "site_id": data.get("site_id", "UNKNOWN"),
             "gps_datetime": data["gps_datetime"],
             "satellite_number": data["satellite_number"],
             "position": {
